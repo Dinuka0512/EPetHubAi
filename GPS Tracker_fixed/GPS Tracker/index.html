@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main Dashboard - GPS Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <meta name="description" content="Keep your pet safe with ePet Hub's real-time GPS tracker. Track your cat or dog's location, view history, and set safe zones with our advanced tracking device and easy-to-use app.">
+  <meta name="keywords" content="pet gps tracker, dog tracker, cat tracker, gps collar, pet security, epet hub, sri lanka">
+
+
+
+  <link rel="icon" href="assets/logo.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta property="og:title" content="ePet Hub - Real-Time GPS Pet Tracker for Cats & Dogs">
+
+  <meta property="og:description" content="Never lose your furry friend again! ePet Hub offers advanced real-time GPS trackers with live tracking, location history, and safe zone alerts.">
+
+  <meta property="og:url" content="e-pet-hub-tracking.vercel.app">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:image" content="https://dilshanhesara-e-pet-hub-tracking.vercel.app/img.png">
+  <meta name="msvalidate.01" content="AA450FC7554D698F9C323956642B2B7C" />
+
+
+
+  <style>
+    :root {
+      --primary-color: #f59e0b;
+      --safe-color: #f59e0b;
+      --alert-color: #ef4444;
+      --offline-color: #6b7280;
+      --background-color: #f3f4f6;
+      --sidebar-bg: #ffffff;
+      --card-bg: #ffffff;
+      --sidebar-text: #374151;
+      --sidebar-active: #f59e0b;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: var(--background-color);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #374151;
+      position: relative;
+    }
+
+    .sidebar-header h3 {
+      margin: 0;
+      color: #111827;
+      font-size: 24px;
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .sidebar-nav { flex-grow: 1; padding: 20px 0; }
+    .sidebar-nav h4 { padding: 0 20px 10px 20px; font-size: 12px; text-transform: uppercase; color: #9ca3af; }
+    .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li a { display: flex; align-items: center; padding: 12px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.3s; }
+    .sidebar-nav li a:hover { background-color: #d97706; }
+    .sidebar-nav li.active a { background-color: var(--primary-color); color: black; font-weight: bold; }
+    .sidebar-nav i { margin-right: 15px; width: 20px; text-align: center; }
+
+    /* Main Content Styles */
+    .main-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+      min-width: 0;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+    .main-header h2 { margin: 0; font-size: 24px; }
+    .main-header button { margin-left: auto; }
+
+    .content-area {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    /* Pet Cards Column */
+    .pets-column {
+      width: 35%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 300px;
+    }
+    .pet-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .pet-card-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .pet-card-header i { font-size: 32px; margin-right: 15px; }
+    .pet-card-header h3 { margin: 0; font-size: 20px; }
+
+    .pet-card-body { display: flex; justify-content: space-around; text-align: center; }
+    .pet-stat h4 { margin: 0 0 5px 0; font-size: 12px; color: #6b7280; text-transform: uppercase; }
+    .pet-stat p { margin: 0; font-weight: bold; }
+
+    /* Card Colors */
+    .pet-card.safe { border-left: 5px solid var(--primary-color); }
+    .pet-card.safe .pet-card-header i { color: var(--primary-color); }
+    .pet-card.alert { border-left: 5px solid var(--alert-color); }
+    .pet-card.alert .pet-card-header i { color: var(--alert-color); }
+    .pet-card.offline { border-left: 5px solid var(--offline-color); }
+    .pet-card.offline .pet-card-header i { color: var(--offline-color); }
+
+    /* Map Container */
+    .map-column {
+      width: 65%;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-width: 0;
+    }
+    #map { width: 100%; height: 100%; }
+
+    /* Button Styles */
+    button {
+      background-color: var(--primary-color);
+      color: white !important;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    button:hover {
+      background-color: #d97706;
+      color: white !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+      color: white !important;
+    }
+
+    button:focus {
+      color: white !important;
+      outline: none;
+    }
+
+    button:visited {
+      color: white !important;
+    }
+
+    button.clicked {
+      color: white !important;
+      background-color: #d97706;
+    }
+
+    /* Force ALL text elements inside buttons to be white */
+    button * {
+      color: white !important;
+    }
+
+    button i {
+      font-size: 16px;
+      color: white !important;
+    }
+
+    button span {
+      color: white !important;
+    }
+
+    button p {
+      color: white !important;
+    }
+
+    button div {
+      color: white !important;
+    }
+
+    button strong {
+      color: white !important;
+    }
+
+    button em {
+      color: white !important;
+    }
+
+    button small {
+      color: white !important;
+    }
+
+    button label {
+      color: white !important;
+    }
+
+    button a {
+      color: white !important;
+    }
+
+    button text {
+      color: white !important;
+    }
+
+    button tspan {
+      color: white !important;
+    }
+
+    /* Ensure button content is always visible */
+    button, button * {
+      color: white !important;
+      fill: white !important;
+      stroke: white !important;
+    }
+
+    /* Override any inherited colors */
+    button, button *, button::before, button::after {
+      color: white !important;
+      fill: white !important;
+      stroke: white !important;
+    }
+
+    /* Force text color on all button states */
+    button:any-link, button:any-link * {
+      color: white !important;
+    }
+
+    button:any-link:hover, button:any-link:hover * {
+      color: white !important;
+    }
+
+    button:any-link:active, button:any-link:active * {
+      color: white !important;
+    }
+
+    button:any-link:focus, button:any-link:focus * {
+      color: white !important;
+    }
+
+    .test-btn {
+      background-color: var(--primary-color);
+      color: white !important;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 20px;
+    }
+
+    .test-btn:hover {
+      background-color: #d97706;
+      color: white !important;
+    }
+
+    .test-btn.clicked {
+      background-color: #d97706;
+      color: white !important;
+    }
+
+    /* RESPONSIVE STYLES */
+
+    /* Tablet styles */
+    @media (max-width: 1024px) {
+      .content-area {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .pets-column {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .map-column {
+        width: 100%;
+        height: 400px;
+        min-height: 400px;
+      }
+
+      .main-header h2 {
+        font-size: 20px;
+      }
+
+      .sidebar {
+        width: 220px;
+      }
+
+      .sidebar-header h3 {
+        font-size: 20px;
+      }
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      body {
+        height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .main-header {
+        padding: 15px 60px 15px 20px;
+      }
+
+      .main-header h2 {
+        font-size: 18px;
+      }
+
+      .test-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-left: 10px;
+      }
+
+      .content-area {
+        padding: 15px;
+        gap: 15px;
+      }
+
+      .map-column {
+        height: 300px;
+        min-height: 300px;
+      }
+
+      .pet-card {
+        padding: 15px;
+      }
+
+      .pet-card-header i {
+        font-size: 24px;
+      }
+
+      .pet-card-header h3 {
+        font-size: 18px;
+      }
+
+      .pet-card-body {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pet-stat {
+        min-width: 80px;
+      }
+
+      .pet-stat h4 {
+        font-size: 10px;
+      }
+
+      .pet-stat p {
+        font-size: 14px;
+      }
+    }
+
+    /* Small mobile styles */
+    @media (max-width: 480px) {
+      .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 15px 15px 15px 60px;
+      }
+
+      .main-header button {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .content-area {
+        padding: 10px;
+      }
+
+      .pet-card-body {
+        justify-content: space-between;
+      }
+
+      .pet-stat {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .map-column {
+        height: 250px;
+        min-height: 250px;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-width: 280px;
+      }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 320px) {
+      .pet-card {
+        padding: 10px;
+      }
+
+      .pet-card-header {
+        margin-bottom: 10px;
+      }
+
+      .pet-card-header i {
+        font-size: 20px;
+        margin-right: 10px;
+      }
+
+      .pet-card-header h3 {
+        font-size: 16px;
+      }
+
+      .map-column {
+        height: 200px;
+        min-height: 200px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<div class="dashboard-container" style="display:flex; width:100%;">
+  <button class="menu-toggle" onclick="toggleMobileMenu()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h3>🐾 PetTrack</h3></div>
+    <nav class="sidebar-nav">
+      <h4>Tools</h4>
+      <ul>
+        <li class="active"><a href="index.html"><i class="fas fa-th-large"></i> Main Dashboard</a></li>
+        <li><a href="htmlPages/Buddy.html"><i class="fas fa-dog"></i> Buddy's Dashboard</a></li>
+        <li><a href="htmlPages/Settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="main-header">
+      <h2>All Pets Overview</h2>
+      <button class="test-btn"><i class="fas fa-play"></i> Test Button</button>
+    </header>
+    <div class="content-area">
+      <div class="pets-column">
+        <div class="pet-card safe">
+          <div class="pet-card-header">
+            <i class="fas fa-dog"></i>
+            <h3>Buddy</h3>
+          </div>
+          <div class="pet-card-body">
+            <div class="pet-stat"><h4>Status</h4><p id="zone">Safe Zone</p></div>
+            <div class="pet-stat"><h4>Battery</h4><p id="battery">78%</p></div>
+            <div class="pet-stat"><h4>Last Sync</h4><p id="sync">7:24 PM</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="map-column">
+        <div id="map"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Mobile menu toggle function
+  function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('mobile-open');
+  }
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.querySelector('.menu-toggle');
+
+    if (window.innerWidth <= 768) {
+      if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+        sidebar.classList.remove('mobile-open');
+      }
+    }
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', function() {
+    const sidebar = document.getElementById('sidebar');
+    if (window.innerWidth > 768) {
+      sidebar.classList.remove('mobile-open');
+    }
+  });
+
+  // Add click event listeners to all buttons
+  document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove clicked class from all buttons
+        buttons.forEach(btn => btn.classList.remove('clicked'));
+        // Add clicked class to this button
+        this.classList.add('clicked');
+
+        // Ensure all text elements inside button are white
+        this.style.color = 'white';
+        this.style.fill = 'white';
+        this.style.stroke = 'white';
+
+        // Force ALL child elements to be white
+        const textElements = this.querySelectorAll('*');
+        textElements.forEach(element => {
+          element.style.color = 'white';
+          element.style.fill = 'white';
+          element.style.stroke = 'white';
+
+          // Also set computed style
+          element.style.setProperty('color', 'white', 'important');
+          element.style.setProperty('fill', 'white', 'important');
+          element.style.setProperty('stroke', 'white', 'important');
+        });
+
+        // Force text visibility
+        this.style.visibility = 'visible';
+        this.style.opacity = '1';
+
+        // Additional force for text content
+        this.style.setProperty('color', 'white', 'important');
+        this.style.setProperty('fill', 'white', 'important');
+        this.style.setProperty('stroke', 'white', 'important');
+      });
+    });
+  });
+
+  function initMap() {
+    const map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 6.915, lng: 79.86 }, // Center of Colombo
+      zoom: 14
+    });
+
+    const pets = [
+      { name: 'Buddy', lat: 6.9150, lng: 79.8588, icon: 'fa-dog', color: '#f59e0b' },
+      { name: 'Whiskers', lat: 6.9025, lng: 79.8519, icon: 'fa-cat', color: '#f59e0b' },
+      { name: 'Rocky (Last Seen)', lat: 6.8654, lng: 79.8825, icon: 'fa-dog', color: '#6b7280' }
+    ];
+
+    const bounds = new google.maps.LatLngBounds();
+
+    pets.forEach(pet => {
+      const position = { lat: pet.lat, lng: pet.lng };
+      const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: pet.name,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: pet.color,
+          fillOpacity: 1,
+          strokeWeight: 2,
+          strokeColor: "white"
+        }
+      });
+      bounds.extend(position);
+    });
+
+    map.fitBounds(bounds); // Adjust map to show all markers
+  }
+</script>
+<!-- Firebase Imports -->
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-database-compat.js"></script>
+
+
+<script src="javaScript/gpsHelper.js"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDg7_ygvD2iISNMCdpe1QJiIvY-RBZ6B6M&callback=initMap"></script>
+
+
+<script>
+  let statusTimeout;
+  let secondsSinceLastUpdate = 0;
+  let timerInterval;
+
+  function updateStatusSafeZone(isSafe) {
+    const alertCard = document.getElementById("zone");
+    alertCard.innerHTML ="";
+    if (!alertCard) return;
+
+
+    if (isSafe) {
+      alertCard.innerHTML = `<i class="fas fa-check-circle"></i> In Safe Zone`;
+    } else {
+      //uncomment to show timer
+      //alertCard.innerHTML = `<i class="fas fa-exclamation-triangle"></i> No Signal(${secondsSinceLastUpdate}s ago)`;
+      alertCard.innerHTML = `<i class="fas fa-exclamation-triangle"></i> No Signal`;
+    }
+  }
+
+  function startConsoleTimer() {
+    clearInterval(timerInterval);
+    secondsSinceLastUpdate = 0;
+
+    timerInterval = setInterval(() => {
+      secondsSinceLastUpdate++;
+    }, 1000);
+  }
+
+  // Keep track of the last update timestamp
+  let lastUpdateTime = null;
+  let checkInterval = null;
+
+  window.initMap = function() {
+    gpsInitMap("map"); // initialize map
+
+    // Load Buddy's latest event on page load
+    loadLatestEvents(1, ({ latest }) => {
+      if (!latest || !latest.location) return;
+
+      lastUpdateTime = latest.timestamp; // store last timestamp
+
+      const buddyLocation = {
+        lat: Number(latest.location.lat),
+        lng: Number(latest.location.lng)
+      };
+
+      // Add marker for Buddy
+      if (window.buddyMarker) window.buddyMarker.setMap(null);
+      window.buddyMarker = new google.maps.Marker({
+        position: buddyLocation,
+        map: map,
+        title: "Buddy",
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: latest.isSafe ? "#f59e0b" : "#ef4444",
+          fillOpacity: 1,
+          strokeWeight: 2,
+          strokeColor: "white"
+        }
+      });
+
+      map.setCenter(buddyLocation);
+      map.setZoom(15);
+
+      // Always update Buddy's card with current data
+      document.querySelector(".pet-card h3").innerText = "Buddy";
+      document.getElementById("battery").innerHTML =
+              `<i class="fas fa-battery-three-quarters"></i> ${latest.battery.percent}%`;
+      document.getElementById("sync").innerHTML =
+              `<i class="fas fa-clock"></i> ${new Date(latest.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+      // Set Safe Zone text initially
+      document.getElementById("zone").innerHTML =
+              `<i class="fas fa-check-circle"></i> In Safe Zone`;
+
+      // Start interval to check if data is stale (>20s)
+      if (!checkInterval) {
+        checkInterval = setInterval(() => {
+          const now = Date.now();
+          if (lastUpdateTime && (now - lastUpdateTime > 20000)) {
+            document.getElementById("zone").innerHTML =
+                    `<i class="fas fa-exclamation-triangle"></i> No Signal`;
+          }
+        }, 1000);
+      }
+    });
+  };
+</script>
+
+</body>
+</html>

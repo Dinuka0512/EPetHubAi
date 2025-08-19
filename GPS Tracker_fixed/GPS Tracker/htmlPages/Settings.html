@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - GPS Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #f59e0b;
+      --sidebar-bg: #ffffff;
+      --background-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --sidebar-text: #374151;
+      --sidebar-active: #f59e0b;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: var(--background-color);
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* Overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #374151; }
+    .sidebar-header h3 { margin: 0; color: black; font-size: 24px; }
+    .sidebar-nav { flex-grow: 1; padding: 20px 0; }
+    .sidebar-nav h4 { padding: 0 20px 10px 20px; font-size: 12px; text-transform: uppercase; color: #9ca3af; }
+    .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar-nav li a { display: flex; align-items: center; padding: 12px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.3s; }
+    .sidebar-nav li a:hover { background-color: #d97706; }
+    .sidebar-nav li.active a { background-color: var(--primary-color); color: black; font-weight: bold; }
+    .sidebar-nav i { margin-right: 15px; width: 20px; text-align: center; }
+
+    /* Close button for mobile sidebar */
+    .sidebar-close {
+      display: none;
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--sidebar-text);
+      cursor: pointer;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+    .main-content h2 { margin-top: 0; }
+
+    /* Settings Card */
+    .settings-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+    .settings-card h3 {
+      margin-top: 0;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    /* Toggle Switch */
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+    }
+    .switch input { display: none; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px; width: 20px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary-color); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .form-actions {
+      text-align: right;
+      margin-top: 30px;
+    }
+    .save-btn {
+      background-color: var(--primary-color);
+      color: white !important;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .save-btn:hover {
+      background-color: #d97706;
+      color: white !important;
+    }
+
+    .save-btn:active {
+      color: white !important;
+    }
+
+    .save-btn:focus {
+      color: white !important;
+      outline: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .mobile-menu-toggle {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.active {
+        display: block;
+      }
+
+      .sidebar-close {
+        display: block;
+      }
+
+      .main-content {
+        padding: 70px 15px 20px 15px;
+        width: 100%;
+      }
+
+      .settings-card {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .toggle-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .form-actions {
+        text-align: center;
+      }
+
+      .save-btn {
+        width: 100%;
+        padding: 15px 25px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 70px 10px 20px 10px;
+      }
+
+      .settings-card {
+        padding: 15px;
+      }
+
+      .settings-card h3 {
+        font-size: 18px;
+      }
+
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group input[type="password"] {
+        padding: 12px;
+        font-size: 16px;
+      }
+    }
+
+    /* Tablet adjustments */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .main-content {
+        padding: 20px 15px;
+      }
+
+      .settings-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<button class="mobile-menu-toggle" onclick="toggleSidebar()">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <button class="sidebar-close" onclick="closeSidebar()">
+    <i class="fas fa-times"></i>
+  </button>
+  <div class="sidebar-header"><h3>🐾 PetTrack</h3></div>
+  <nav class="sidebar-nav">
+    <h4>My Pets</h4>
+    <ul><li><a href="Buddy.html"><i class="fas fa-dog"></i> Buddy</a></li></ul>
+    <h4>Tools</h4>
+    <ul>
+      <li><a href="../index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+      <li><a href="LocationHistory.html"><i class="fas fa-history"></i> Location History</a></li>
+      <li><a href="Geofences.html"><i class="fas fa-draw-polygon"></i> Geofences</a></li>
+      <li><a href="Alerts.html"><i class="fas fa-bell"></i> Alerts</a></li>
+      <li class="active"><a href="Settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <h2>Settings</h2>
+
+  <div class="settings-card">
+    <h3><i class="fas fa-user-circle"></i> Profile</h3>
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" value="John Doe">
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" value="johndoe@example.com">
+    </div>
+    <div class="form-group">
+      <label for="password">Change Password</label>
+      <input type="password" id="password" placeholder="Enter new password">
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h3><i class="fas fa-bell"></i> Notifications</h3>
+    <div class="toggle-group">
+      <span>Geofence Alerts (Enter/Exit)</span>
+      <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-group">
+      <span>Low Battery Warnings</span>
+      <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-group">
+      <span>Tracker Offline</span>
+      <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="save-btn"><i class="fas fa-save"></i> Save Changes</button>
+  </div>
+</main>
+
+<script>
+  // Mobile sidebar functionality
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  }
+
+  function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  }
+
+  // Close sidebar when clicking on main content on mobile
+  document.querySelector('.main-content').addEventListener('click', function() {
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+      closeSidebar();
+    }
+  });
+
+  // Add click event listener to save button
+  document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.querySelector('.save-btn');
+    saveBtn.addEventListener('click', function() {
+      // Add clicked class
+      this.classList.add('clicked');
+      // Ensure text is white
+      this.style.color = 'white';
+
+      // Simulate save action
+      setTimeout(() => {
+        this.classList.remove('clicked');
+      }, 200);
+    });
+  });
+</script>
+</body>
+</html>
